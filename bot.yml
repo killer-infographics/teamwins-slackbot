@@ -4,5 +4,6 @@ avatar: images/avatar.png
 config:
 - name: SLACK_API_TOKEN
   friendly_name: Slack API Token
-  info: Token for your Slack user or App    
+  info: Token for your Slack user or App
+  default: Paste your token here
   type: secret

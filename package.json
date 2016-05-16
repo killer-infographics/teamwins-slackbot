@@ -1,0 +1,15 @@
+{
+  "name": "team-wins-slack-bot",
+  "version": "1.0.0",
+  "main": "wins-bot.js",
+  "description": "slack bot for killer team wins",
+  "author": "Robert Borrego",
+  "scripts": {
+    "start": "node wins-bot.js"
+  },
+  "dependencies": {
+    "botkit": "latest",
+    "node-schedule": "latest",
+    "request": "latest"
+  }
+}

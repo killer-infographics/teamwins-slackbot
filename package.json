@@ -8,6 +8,7 @@
     "start": "node wins-bot.js"
   },
   "dependencies": {
+    "beepboop-botkit": "^1.4.0",
     "botkit": "latest",
     "node-schedule": "latest",
     "request": "latest"

@@ -71,7 +71,7 @@ var j = schedule.scheduleJob('1 1 14 * * 5', function() {
 
 function saveWin(bot, message) {
   // send request to get username (whyyyyyy?!)
-  request('https://slack.com/api/users.info?token=xoxp-16225115810-16224883015-18910609445-88820d278f&user=' + message.user, function(error, response, body) {
+  request('https://slack.com/api/users.info?token=' + SLACK_API_TOKEN + '&user=' + message.user, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       var str = body;
       var userObj = JSON.parse(str);

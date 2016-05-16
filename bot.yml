@@ -1,3 +1,8 @@
 name: Team Wins
 description: A Slack bot that gathers team wins and posts them once a week,
 avatar: images/avatar.png
+config:
+- name: SLACK_API_TOKEN
+  friendly_name: Slack API Token
+  info: Token for your Slack user or App    
+  type: secret

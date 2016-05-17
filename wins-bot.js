@@ -5,10 +5,11 @@ var Botkit = require('botkit'),
 
 // var winsObj = require('./wins.json'); // json object of wins
 
-var controller = Botkit.slackbot({
-  debug: false,
-  json_file_store: ''
-});
+var controller = Botkit
+  .slackbot({
+    debug: false,
+    json_file_store: ''
+  });
 var beepboop = BeepBoop.start(controller, {
   debug: true
 });
@@ -18,7 +19,7 @@ var accessToken, teamID;
 beepboop.on('add_resource', function(message) {
   console.log('Team added: ', message)
 
-  accessToken = message.resource.SLACK_API_TOKEN;
+  accessToken = message.resource.SlackBotAccessToken;
   teamID = message.resource.SlackTeamID;
 });
 

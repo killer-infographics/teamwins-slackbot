@@ -7,3 +7,7 @@ config:
   info: Token for your Slack user or App
   default: Paste your token here
   type: secret
+slackscopes:
+  - bot
+  - commands
+  - incoming-webhook

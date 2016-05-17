@@ -1,62 +1,71 @@
 var Botkit = require('botkit'),
   BeepBoop = require('beepboop-botkit'),
-  fs = require('fs'),
   schedule = require('node-schedule'),
   request = require('request');
 
-var winsObj = require('./wins.json'); // json object of wins
+// var winsObj = require('./wins.json'); // json object of wins
 
 var controller = Botkit.slackbot({
-  debug: false
+  debug: false,
+  json_file_store: ''
 });
 var beepboop = BeepBoop.start(controller, {
   debug: true
 });
 
-// Get o-Auth token when team adds bot
+// Get token when team adds bot
 var accessToken;
-beepboop.on('add_resource', function (message) {
+beepboop.on('add_resource', function(message) {
   console.log('Team added: ', message)
-  accessToken = message.resource.SlackAccessToken;
+
+  accessToken = message.resource.SLACK_API_TOKEN;
 });
 
 // give the bot something to listen for
 controller.on('direct_message,direct_mention,mention', function(bot, message) {
   var messageTxt = message.text;
+
   // if lucy dm's "show me wins", send her a printout of all wins
   if (messageTxt.indexOf('show me wins') >= 0) {
     if (message.user === 'U0G8TL9LJ' /* lucy */ || message.user === 'U0G6LRZ0F' /* robert */ ) {
       console.log('I showed the wins!');
-      bot.reply(message, 'Ok!\n' + compileMsg(winsObj));
+
+      bot.reply(message, 'Ok!\n' + compileMsg(message));
     } else {
       bot.reply(message, 'Sorry, but you are not authorized to use that command.')
     }
   } else {
     console.log('Someone sent me a win, but i have not saved it yet');
+
     saveWin(bot, message);
   }
 });
 
 // every friday at 2pm, send message to everybody room with all client wins. erase wins.
 var j = schedule.scheduleJob('1 1 14 * * 5', function() {
-  console.log('I \'m sending the wins to general!')
+  console.log('I \'m sending the wins to general!');
+
   bot.sendWebhook({
-    text: 'Here are the wins from this week:\n' + compileMsg(winsObj),
+    text: 'Here are the wins from this week:\n' + compileMsg(message),
     channel: '#general'
   }, function(err, res) {
     if (err) {
       throw new Error('Could not connect to webhook');
     }
   });
-  console.log('Here are the wins from this week:\n' + compileMsg(winsObj));
-  // erase json file
-  winsObj = [];
-  fs.writeFile('wins.json', JSON.stringify(winsObj), function(err) {
-    if (err) {
-      throw new Error(err);
-    }
+  console.log('Here are the wins from this week:\n' + compileMsg(message));
+
+  // erase wins
+  controller.storage.teams.get(message.team, function(err, team) {
+      team.wins = []
+
+    // save new user object
+    controller.storage.teams.save(team, function(err) {
+      if (!err) {
+        console.log("I erased the wins.")
+      }
+    });
   });
-  console.log('Erased wins');
 });
 
 function saveWin(bot, message) {
@@ -64,7 +73,6 @@ function saveWin(bot, message) {
   request('https://slack.com/api/users.info?token=' + accessToken + '&user=' + message.user, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       var str = body;
-      console.log('test');
       var userObj = JSON.parse(str);
       var hours, minutes;
       var ts = Math.floor(message.ts);
@@ -84,22 +92,24 @@ function saveWin(bot, message) {
 
       var timestamp = d.getMonth() + 1 + '-' + d.getDate() + '-' + d.getFullYear() + ' @ ' + d.getHours() + ':' + d.getMinutes();
 
-
-      // store message in json array
-      winsObj.push({
-        // "timestamp" : d,
-        "timestamp": timestamp,
-        "from": userObj.user.name,
-        "text": message.text
-      });
-      console.log(userObj.user.name + ' @ ' + timestamp + ': ' + message.text);
-      console.log('I saved the win!');
-
-      // write new json file
-      fs.writeFile('wins.json', JSON.stringify(winsObj), function(err) {
-        if (err) {
-          throw new Error(err);
+      controller.storage.teams.get(message.team, function(err, team) {
+        if (!team.wins) {
+          team.wins = []
         }
+
+        // push data to user object
+        team.wins.push({
+          "timestamp": timestamp,
+          "from": userObj.user.name,
+          "text": message.text
+        });
+
+        // save new user object
+        controller.storage.teams.save(team, function(err) {
+          if (!err) {
+            console.log("I saved the win!")
+          }
+        });
       });
     }
   });
@@ -108,10 +118,15 @@ function saveWin(bot, message) {
   bot.reply(message, "Thanks for submitting your team win!");
 }
 
-function compileMsg(winsObj) {
+// function compileMsg(winsObj) {
+function compileMsg(message) {
   var finalMessage = '';
-  for (var i = 0; i < winsObj.length; i++) {
-    finalMessage += '*From:* ' + winsObj[i].from + '\n' + '*Date:* ' + winsObj[i].timestamp + '\n' + winsObj[i].text + '\n------------\n';
-  }
+
+  controller.storage.teams.get(message.team, function(err, team) {
+    for (var i = 0; i < team.wins.length; i++) {
+      finalMessage += '*From:* ' + team.wins[i].from + '\n' + '*Date:* ' + team.wins[i].timestamp + '\n' + team.wins[i].text + '\n------------\n';
+    }
+  });
+
   return finalMessage;
 }

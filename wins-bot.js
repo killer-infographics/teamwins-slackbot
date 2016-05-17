@@ -119,7 +119,8 @@ function saveWin(bot, message) {
   });
 
   // optional reply
-  bot.reply(message, "Thanks for submitting your team win!");
+  // bot.reply(message, "Thanks for submitting your team win!");
+  bot.reply(message, "I'm currently sick and not saving wins. I will let everybody know when I feel better!");
 }
 
 // function compileMsg(winsObj) {

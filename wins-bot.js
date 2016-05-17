@@ -90,7 +90,7 @@ function saveWin(bot, message) {
         minutes = d.getMinutes();
       }
 
-      var timestamp = d.getMonth() + 1 + '-' + d.getDate() + '-' + d.getFullYear() + ' @ ' + d.getHours() + ':' + d.getMinutes();
+      var timestamp = d.getMonth() + 1 + '-' + d.getDate() + '-' + d.getFullYear() + ' @ ' + (d.getHours() - 7) + ':' + d.getMinutes();
 
       controller.storage.teams.get(message.team, function(err, team) {
         if (!team.wins) {

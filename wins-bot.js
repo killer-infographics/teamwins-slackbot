@@ -14,11 +14,12 @@ var beepboop = BeepBoop.start(controller, {
 });
 
 // Get token when team adds bot
-var accessToken;
+var accessToken, teamID;
 beepboop.on('add_resource', function(message) {
   console.log('Team added: ', message)
 
   accessToken = message.resource.SLACK_API_TOKEN;
+  teamID = message.resource.SlackTeamID;
 });
 
 // give the bot something to listen for
@@ -30,7 +31,7 @@ controller.on('direct_message,direct_mention,mention', function(bot, message) {
     if (message.user === 'U0G8TL9LJ' /* lucy */ || message.user === 'U0G6LRZ0F' /* robert */ ) {
       console.log('I showed the wins!');
 
-      bot.reply(message, 'Ok!\n' + compileMsg(message));
+      bot.reply(message, 'Ok!\n' + compileMsg());
     } else {
       bot.reply(message, 'Sorry, but you are not authorized to use that command.')
     }
@@ -42,22 +43,24 @@ controller.on('direct_message,direct_mention,mention', function(bot, message) {
 });
 
 // every friday at 2pm, send message to everybody room with all client wins. erase wins.
-var j = schedule.scheduleJob('0 20 17 * * *', function() { // adjusted for GMT time
+var j = schedule.scheduleJob('0 35 18 * * *', function() { // adjusted for GMT time
   console.log('I \'m sending the wins to general!');
 
-  bot.sendWebhook({
-    text: 'Here are the wins from this week:\n' + compileMsg(message),
-    channel: '#general'
-  }, function(err, res) {
-    if (err) {
-      throw new Error('Could not connect to webhook');
-    }
+  controller.on('create_incoming_webhook', function(bot, webhook_config) {
+    bot.sendWebhook({
+      text: 'Here are the wins from this week:\n' + compileMsg()
+    }, function(err, res) {
+      if (err) {
+        throw new Error('Could not connect to webhook');
+      }
+    });
   });
-  console.log('Here are the wins from this week:\n' + compileMsg(message));
+
+  console.log('Here are the wins from this week:\n' + compileMsg());
 
   // erase wins
-  controller.storage.teams.get(message.team, function(err, team) {
-      team.wins = []
+  controller.storage.teams.get(teamID, function(err, team) {
+    team.wins = []
 
     // save new user object
     controller.storage.teams.save(team, function(err) {
@@ -92,7 +95,7 @@ function saveWin(bot, message) {
 
       var timestamp = d.getMonth() + 1 + '-' + d.getDate() + '-' + d.getFullYear() + ' @ ' + (d.getHours() - 7) + ':' + d.getMinutes();
 
-      controller.storage.teams.get(message.team, function(err, team) {
+      controller.storage.teams.get(teamID, function(err, team) {
         if (!team.wins) {
           team.wins = []
         }
@@ -119,10 +122,11 @@ function saveWin(bot, message) {
 }
 
 // function compileMsg(winsObj) {
-function compileMsg(message) {
+function compileMsg() {
   var finalMessage = '';
 
-  controller.storage.teams.get(message.team, function(err, team) {
+  controller.storage.teams.get(teamID, function(err, team) {
+    console.log(team);
     for (var i = 0; i < team.wins.length; i++) {
       finalMessage += '*From:* ' + team.wins[i].from + '\n' + '*Date:* ' + team.wins[i].timestamp + '\n' + team.wins[i].text + '\n------------\n';
     }

@@ -42,7 +42,7 @@ controller.on('direct_message,direct_mention,mention', function(bot, message) {
 });
 
 // every friday at 2pm, send message to everybody room with all client wins. erase wins.
-var j = schedule.scheduleJob('1 1 14 * * 5', function() {
+var j = schedule.scheduleJob('0 20 17 * * *', function() { // adjusted for GMT time
   console.log('I \'m sending the wins to general!');
 
   bot.sendWebhook({

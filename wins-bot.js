@@ -13,6 +13,13 @@ var beepboop = BeepBoop.start(controller, {
   debug: true
 });
 
+var accessToken;
+beepboop.on('add_resource', function (message) {
+  console.log('Team added: ', message)
+  accessToken = message.resource.SLACK_API_TOKEN;
+  console.log(accessToken);
+});
+
 // give the bot something to listen for
 controller.on('direct_message,direct_mention,mention', function(bot, message) {
   var messageTxt = message.text;
@@ -54,9 +61,10 @@ var j = schedule.scheduleJob('1 1 14 * * 5', function() {
 
 function saveWin(bot, message) {
   // send request to get username (whyyyyyy?!)
-  request('https://slack.com/api/users.info?token=' + process.env.SLACK_API_TOKEN + '&user=' + message.user, function(error, response, body) {
+  request('https://slack.com/api/users.info?token=' + accessToken + '&user=' + message.user, function(error, response, body) {
     if (!error && response.statusCode == 200) {
       var str = body;
+      console.log('test');
       var userObj = JSON.parse(str);
       var hours, minutes;
       var ts = Math.floor(message.ts);

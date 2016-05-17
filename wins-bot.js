@@ -13,11 +13,11 @@ var beepboop = BeepBoop.start(controller, {
   debug: true
 });
 
+// Get o-Auth token when team adds bot
 var accessToken;
 beepboop.on('add_resource', function (message) {
   console.log('Team added: ', message)
-  accessToken = message.resource.SLACK_API_TOKEN;
-  console.log(accessToken);
+  accessToken = message.resource.SlackAccessToken;
 });
 
 // give the bot something to listen for

@@ -44,7 +44,7 @@ controller.on('direct_message,direct_mention,mention', function(bot, message) {
 
 beepboop.on('botkit.rtm.started', function(bot, resource, meta) {
   // every friday at 2pm, send message to everybody room with all client wins. erase wins.
-  var j = schedule.scheduleJob('0 55 18 * * *', function() { // adjusted for GMT time
+  var j = schedule.scheduleJob('0 0 21 * * 5', function() { // adjusted for GMT time
     console.log('I \'m sending the wins to general!');
 
     bot.api.chat.postMessage({

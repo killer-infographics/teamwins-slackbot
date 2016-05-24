@@ -15,12 +15,12 @@ var beepboop = BeepBoop.start(controller, {
 });
 
 // Get token when team adds bot
-var accessToken, teamID;
+var accessToken, teamID, webhookURL;
 beepboop.on('add_resource', function(message) {
-  console.log('Team added: ', message)
-
   accessToken = message.resource.SlackBotAccessToken;
   teamID = message.resource.SlackTeamID;
+  webhookURL = message.resource.SlackIncomingWebhookConfigURL;
+  console.log(webhookURL);
 });
 
 // give the bot something to listen for
@@ -47,14 +47,12 @@ controller.on('direct_message,direct_mention,mention', function(bot, message) {
 var j = schedule.scheduleJob('0 35 18 * * *', function() { // adjusted for GMT time
   console.log('I \'m sending the wins to general!');
 
-  controller.on('create_incoming_webhook', function(bot, webhook_config) {
-    bot.sendWebhook({
-      text: 'Here are the wins from this week:\n' + compileMsg()
-    }, function(err, res) {
-      if (err) {
-        throw new Error('Could not connect to webhook');
-      }
-    });
+  bot.sendWebhook({
+    text: 'Here are the wins from this week:\n' + compileMsg()
+  }, function(err, res) {
+    if (err) {
+      throw new Error('Could not connect to webhook');
+    }
   });
 
   console.log('Here are the wins from this week:\n' + compileMsg());

@@ -49,7 +49,7 @@ beepboop.on('botkit.rtm.started', function(bot, resource, meta) {
 
     bot.api.chat.postMessage({
       channel: '#general',
-      text: 'Here are the wins from this week:\n' + compileMsg()
+      text: 'Here are the wins from this week:\n' + compileMsg(),
       username: 'Team Wins'
     }, function(err, res) {
       if (err) {

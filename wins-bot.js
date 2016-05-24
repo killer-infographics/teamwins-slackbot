@@ -5,11 +5,10 @@ var Botkit = require('botkit'),
 
 // var winsObj = require('./wins.json'); // json object of wins
 
-var controller = Botkit
-  .slackbot({
-    debug: false,
-    json_file_store: ''
-  });
+var controller = Botkit.slackbot({
+  debug: false,
+  json_file_store: ''
+});
 var beepboop = BeepBoop.start(controller, {
   debug: true
 });
@@ -43,29 +42,33 @@ controller.on('direct_message,direct_mention,mention', function(bot, message) {
   }
 });
 
-// every friday at 2pm, send message to everybody room with all client wins. erase wins.
-var j = schedule.scheduleJob('0 35 18 * * *', function() { // adjusted for GMT time
-  console.log('I \'m sending the wins to general!');
+beepboop.on('botkit.rtm.started', function(bot, resource, meta) {
+  // every friday at 2pm, send message to everybody room with all client wins. erase wins.
+  var j = schedule.scheduleJob('0 55 18 * * *', function() { // adjusted for GMT time
+    console.log('I \'m sending the wins to general!');
 
-  bot.sendWebhook({
-    text: 'Here are the wins from this week:\n' + compileMsg()
-  }, function(err, res) {
-    if (err) {
-      throw new Error('Could not connect to webhook');
-    }
-  });
-
-  console.log('Here are the wins from this week:\n' + compileMsg());
-
-  // erase wins
-  controller.storage.teams.get(teamID, function(err, team) {
-    team.wins = []
-
-    // save new user object
-    controller.storage.teams.save(team, function(err) {
-      if (!err) {
-        console.log("I erased the wins.")
+    bot.api.chat.postMessage({
+      channel: '#general',
+      text: 'Here are the wins from this week:\n' + compileMsg()
+      username: 'Team Wins'
+    }, function(err, res) {
+      if (err) {
+        throw new Error('Could not postMessage to #general');
       }
+    });
+
+    console.log('Here are the wins from this week:\n' + compileMsg());
+
+    // erase wins
+    controller.storage.teams.get(teamID, function(err, team) {
+      team.wins = []
+
+      // save new user object
+      controller.storage.teams.save(team, function(err) {
+        if (!err) {
+          console.log("I erased the wins.")
+        }
+      });
     });
   });
 });
@@ -117,8 +120,8 @@ function saveWin(bot, message) {
   });
 
   // optional reply
-  // bot.reply(message, "Thanks for submitting your team win!");
-  bot.reply(message, "I'm currently sick and not saving wins. I will let everybody know when I feel better!");
+  bot.reply(message, "Thanks for submitting your team win!");
+  // bot.reply(message, "I'm currently sick and not saving wins. I will let everybody know when I feel better!");
 }
 
 // function compileMsg(winsObj) {
